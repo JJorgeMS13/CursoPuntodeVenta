@@ -142,7 +142,6 @@ namespace Punto_de_ventas.ModelClass
                        .Set(p => p.Categoria, categoria)
                        .Update();
                     break;
-
             }
 
         }
