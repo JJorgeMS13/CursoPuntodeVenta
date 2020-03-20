@@ -81,11 +81,14 @@
     <Compile Include="ModelClass\Compra.cs" />
     <Compile Include="ModelClass\Departamento.cs" />
     <Compile Include="ModelClass\Encriptar.cs" />
+    <Compile Include="ModelClass\Imprimir.cs" />
+    <Compile Include="ModelClass\Paginador.cs" />
     <Compile Include="ModelClass\Producto.cs" />
     <Compile Include="ModelClass\Proveedor.cs" />
     <Compile Include="ModelClass\Seguridad.cs" />
     <Compile Include="ModelClass\TextBoxEvent.cs" />
     <Compile Include="ModelClass\Usuario.cs" />
+    <Compile Include="ModelClass\Venta.cs" />
     <Compile Include="Models\Bodega.cs" />
     <Compile Include="Models\Cajas.cs" />
     <Compile Include="Models\Cajas_ingresos.cs" />
@@ -101,6 +104,7 @@
     <Compile Include="Models\RutaUsuario.cs" />
     <Compile Include="Models\Tempo_compras.cs" />
     <Compile Include="Models\tempo_productos.cs" />
+    <Compile Include="Models\Tempo_ventas.cs" />
     <Compile Include="Models\Usuarios.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

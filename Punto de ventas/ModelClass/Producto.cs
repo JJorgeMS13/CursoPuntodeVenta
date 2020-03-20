@@ -20,7 +20,7 @@ namespace Punto_de_ventas.ModelClass
         private string mes = DateTime.Now.ToString("MMM");
         private string year = DateTime.Now.ToString("yyy");
         private string codeBarra;
-        public void getProductos( DataGridView dataGridView)
+        public void getProductos( DataGridView dataGridView, string campo)
         {
             var query = Compras.Join(TempoProductos, c => c.IdCompra, t => t.IdCompra,(
                 c,t)=> new
@@ -33,17 +33,31 @@ namespace Punto_de_ventas.ModelClass
                     c.Proveedor,
                     c.Fecha
                 });
-
-            dataGridView.DataSource = query.ToList();
+            if (campo == string.Empty)
+            {
+                dataGridView.DataSource = query.ToList();
+            }
+            else
+            {
+                var list = query.Where(c => c.Producto.StartsWith(campo));
+                dataGridView.DataSource = list.ToList();
+            }
             dataGridView.Columns[0].Visible = false;
         }
 
         internal void codigoBarra(Panel panelCodigo, String codigosBarras, String producto,String precio)
         {
             int codigo = 0, count = 0;
+            Decimal precio1;
+            String precio2 = "";
             if (codigosBarras == "0")
             {
-                var product1 = Producto.Where(p => p.Producto.Equals(producto) && p.Precio.Equals("$" + precio)).ToList();
+                if (precio != string.Empty)
+                {
+                    precio1 = Convert.ToDecimal(precio);
+                    precio2 = "$" + string.Format("{0: #,###,###,##0.00####}",precio1);
+                }
+                var product1 = Producto.Where(p => p.Producto.Equals(producto) && p.Precio.Equals(precio2.Replace(" ",""))).ToList();
                 if (0 < product1.Count)
                 {
                     codeBarra = product1[0].Codigo;
@@ -98,18 +112,19 @@ namespace Punto_de_ventas.ModelClass
             String accion, int IdProducto)
         {
             int count1 = 0, cant, count2 = 0;
-
+            Decimal precio1 = Convert.ToDecimal(precio);
+            String precio2 = "$" + String.Format("{0: #,###,###,##0.00####}", precio1);
             switch (accion)
             {
                 case "Insert":
 
-                    var product1 = Producto.Where(p => p.Producto.Equals(producto) && p.Precio.Equals(precio)).ToList();
+                    var product1 = Producto.Where(p => p.Producto.Equals(producto) && p.Precio.Equals(precio2.Replace(" ",""))).ToList();
                     if (0 == product1.Count)
                     {
                         Producto.Value(p => p.Codigo, codeBarra)
                             .Value(p => p.Producto, producto)
-                            .Value(p => p.Precio, "$" + String.Format("{0: #,###,###,##0.00####}", precio))
-                            .Value(p => p.Descuento, "$0.00")
+                            .Value(p => p.Precio, precio2.Replace(" ",""))
+                            .Value(p => p.Descuento, "%0.00")
                             .Value(p => p.Departamento, departamento)
                             .Value(p => p.Categoria, categoria)
                             .Insert();
@@ -129,14 +144,14 @@ namespace Punto_de_ventas.ModelClass
                             .Set(b => b.Fecha, fecha)
                             .Update();
                     }
-
+                    deleteProductos(IdProducto);
                     break;
                 case "Update":
                     var product = Producto.Where(p => p.IdProducto.Equals(IdProducto)).ToList();
                     Producto.Where(p => p.IdProducto.Equals(IdProducto))
                        .Set(p => p.Codigo, codeBarra)
                        .Set(p => p.Producto, producto)
-                       .Set(p => p.Precio, "$" + String.Format("{0: #,###,###,##0.00####}", precio))
+                       .Set(p => p.Precio, precio2.Replace(" ", ""))
                        .Set(p => p.Descuento, product[0].Descuento)
                        .Set(p => p.Departamento, departamento)
                        .Set(p => p.Categoria, categoria)
@@ -196,6 +211,16 @@ namespace Punto_de_ventas.ModelClass
                 query = Producto.Where(c => c.Producto.StartsWith(campo));
             }
             dataGridView.DataSource = query.Skip(inicio).Take(reg_por_pagina).ToList();
+        }
+
+        public List<Productos> getListProductos()
+        {
+            return Producto.ToList();
+        }
+
+        private void deleteProductos(int idCompra)
+        {
+            TempoProductos.Where(c => c.IdCompra == idCompra).Delete();
         }
     }
 }

@@ -12,10 +12,12 @@ namespace Punto_de_ventas.ModelClass
     {
         public static List<Cajas> listCaja;
         public static List<Usuarios> listUsuario;
+        public static List<Productos> listProductos;
         public static List<Clientes> numClientes;
         public static List<Proveedores> numProveedor;
         public static List<Tempo_compras> numTempoCompras;
         public static List<RutaUsuario> listruta = new List<RutaUsuario>();
+
 
         public static Caja caja = new Caja();
         public static Login login = new Login();
@@ -28,6 +30,8 @@ namespace Punto_de_ventas.ModelClass
         public static Producto producto = new Producto();
         public static Barcode barcode = new Barcode();
         public static Random rnd = new Random();
+        public static Imprimir imprimir = new Imprimir();
+        public static Venta venta = new Venta();
 
     }
 }

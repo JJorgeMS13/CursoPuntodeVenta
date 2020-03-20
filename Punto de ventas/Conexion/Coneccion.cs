@@ -39,5 +39,6 @@ namespace Punto_de_ventas.Conexion
 
         public ITable<Productos> Producto { get { return GetTable<Productos>(); } }
         public ITable<Bodega> Bodegas { get { return GetTable<Bodega>(); } }
+        public ITable<Tempo_ventas> TempoVentas { get { return GetTable<Tempo_ventas>(); } }
     }
 }

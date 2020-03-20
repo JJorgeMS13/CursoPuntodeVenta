@@ -47,11 +47,13 @@ namespace Punto_de_ventas
             idDpto = 0,
             idCat = 0,
             idCompras = 0,
-            idProveedorCp = 0;
+            idProveedorCp = 0,
+            caja;
            private string fecha = DateTime.Now.ToString("dd/MMM/yyy");
            private string hora = DateTime.Now.ToString("hh:mm:ss");
-
-        private String precioCompra;
+           private String precioCompra;
+           private GroupBox groupBox;
+        private List<Label> labels = new List<Label>();
         #endregion
         public Form1(List<Usuarios> listUsuario, List<Cajas> listCaja)
         {
@@ -83,7 +85,7 @@ namespace Punto_de_ventas
                     //pictureBox_Foto.SizeMode = PictureBoxSizeMode.Zoom;
                     label_Caja.Text = "0";
                     ClassModel.listUsuario = listUsuario;
-
+                    caja = 0;
                 }
                 else if ("Vendedor" == listUsuario[0].Role)
                 {
@@ -96,6 +98,7 @@ namespace Punto_de_ventas
                     label_Caja.Text = Convert.ToString(listCaja[0].Caja);
                     ClassModel.listCaja = listCaja;
                     ClassModel.listUsuario = listUsuario;
+                    caja = listCaja[0].Caja;
 
                     //Codigo con el cual puedo no mostrar un Pagina del TapControl1 para un determinado usuario
                     button_Proveedores.Visible = false;
@@ -122,6 +125,7 @@ namespace Punto_de_ventas
                     label_Caja.Text = Convert.ToString(listCaja[0].Caja);
                     ClassModel.listCaja = listCaja;
                     ClassModel.listUsuario = listUsuario;
+                    caja = listCaja[0].Caja;
                 }
             }
             /***************************************************************
@@ -186,7 +190,27 @@ namespace Punto_de_ventas
              *                                                             *
              **************************************************************/
             #region
-            
+
+            #endregion
+            /***************************************************************
+             *                                                             *   
+             *                CODIGO DE VENTAS.                            *
+             *                                                             *
+             *                                                             *
+             **************************************************************/
+            #region
+            labels.Add(label_Deuda);
+            labels.Add(label_ReciboDeuda);
+            labels.Add(label_ReciboDeudaTotal);
+            labels.Add(label_ReciboNombre);
+            labels.Add(label_ReciboDeudaAnterior);
+            labels.Add(label_ReciboUltimoPago);
+            labels.Add(label_ReciboFecha);
+
+            labels.Add(label_Pago);
+            labels.Add(label_MensajeCliente);
+            button_Ventas.Enabled = false;
+            restablacerVetas();
             #endregion
         }
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -218,6 +242,10 @@ namespace Punto_de_ventas
             }
         }
 
+        private void PrintDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        {
+            ClassModel.imprimir.printDocument(e, groupBox);
+        }
         /***************************************************************
          *                                                             *   
          *                CODIGO Paginador                             *
@@ -648,14 +676,8 @@ namespace Punto_de_ventas
         }
         private void Button_ImprCliente_Click(object sender, EventArgs e)
         {
+            groupBox = groupBox_ReciboCliente;
             printDocument1.Print();
-        }
-        private void PrintDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
-        {
-            Bitmap bm = new Bitmap(this.groupBox_ReciboCliente.Width, this.groupBox_ReciboCliente.Height);
-            groupBox_ReciboCliente.DrawToBitmap(bm, new Rectangle(0, 0, groupBox_ReciboCliente.Width,
-                groupBox_ReciboCliente.Height));
-            e.Graphics.DrawImage(bm, 0, 0);
         }
         #endregion
 
@@ -997,13 +1019,8 @@ namespace Punto_de_ventas
         }
         private void ButtonPd_Imprimir_Click(object sender, EventArgs e)
         {
-            printDocument2.Print();
-        }
-        private void PrintDocument2_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
-        {
-            Bitmap bm = new Bitmap(groupBoxPd_Recibo.Width, groupBoxPd_Recibo.Height);
-            groupBoxPd_Recibo.DrawToBitmap(bm, new Rectangle(0, 0, groupBoxPd_Recibo.Width, groupBoxPd_Recibo.Height));
-            e.Graphics.DrawImage(bm, 0, 0);
+            groupBox = groupBoxPd_Recibo;
+            printDocument1.Print();
         }
         private void ButtonPd_Cancelar_Click(object sender, EventArgs e)
         {
@@ -1878,6 +1895,7 @@ namespace Punto_de_ventas
         {
             ClassModel.eventos.textKeyPress(e);
         }
+
         private void TextBoxUs_Password_TextChanged(object sender, EventArgs e)
         {
             if (textBoxUs_Password.Text == string.Empty)
@@ -1912,7 +1930,7 @@ namespace Punto_de_ventas
 
         /***************************************************************
          *                                                             *   
-         *                CODIGO DE Config.                            *
+         *                CODIGO DE PRODUCTOS.                         *
          *                                                             *
          *                                                             *
          **************************************************************/
@@ -1937,13 +1955,15 @@ namespace Punto_de_ventas
 
         }
 
+
         private void restablecerProductos()
         {
+            paginas = 4;
             idCompras = 0;
             accion = "Insert";
             idProducto = 0;
-            funcion = 1;
-            ClassModel.producto.getProductos(dataGridView_ProdCompra);
+            funcion = 0;
+            ClassModel.producto.getProductos(dataGridView_ProdCompra,"");
             comboBox_DepartamentoPDT.DataSource = ClassModel.producto.GetDepartamentos();
             comboBox_DepartamentoPDT.ValueMember = "IdDpto";
             comboBox_DepartamentoPDT.DisplayMember = "Departamento";
@@ -1951,6 +1971,7 @@ namespace Punto_de_ventas
             textBox_DescripcionPDT.Text = string.Empty;
             textBox_PrecioVentaPDT.Text = string.Empty;
             ClassModel.producto.codigoBarra(panelCodigoB, "00000000", textBox_DescripcionPDT.Text, textBox_PrecioVentaPDT.Text);
+            new Paginador(dataGridView_Productos, label_PaginasPDT,paginas,0);
         }
         private void DataGridView_ProdCompra_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -1959,6 +1980,7 @@ namespace Punto_de_ventas
                 dataGridViewProdCompra();
             }
         }
+
         private void DataGridView_ProdCompra_KeyUp(object sender, KeyEventArgs e)
         {
             if (dataGridView_ProdCompra.Rows.Count != 0)
@@ -1986,7 +2008,7 @@ namespace Punto_de_ventas
             if (textBox_DescripcionPDT.Text == string.Empty)
             {
                 label_DescripcionPDT.ForeColor = Color.LightSlateGray;
-                ClassModel.producto.searchProducto(dataGridView_Productos, textBox_DescripcionPDT.Text, 1, pageSize);
+  
             }
             else
             {
@@ -1997,9 +2019,8 @@ namespace Punto_de_ventas
                     ClassModel.producto.codigoBarra(panelCodigoB, "0", textBox_DescripcionPDT.Text, textBox_PrecioVentaPDT.Text);
                     
                 }
-                ClassModel.producto.searchProducto(dataGridView_Productos, textBox_DescripcionPDT.Text, 1, pageSize);
-
             }
+            ClassModel.producto.searchProducto(dataGridView_Productos, textBox_DescripcionPDT.Text, 1, pageSize);
         }
 
         private void TextBox_DescripcionPDT_KeyPress(object sender, KeyPressEventArgs e)
@@ -2018,7 +2039,7 @@ namespace Punto_de_ventas
             {
                 label_PrecioVentaPDT.Text = "Precio Venta";
                 label_PrecioVentaPDT.ForeColor = Color.DarkCyan;
-                if (funcion == 1)
+                if (funcion == 1 && precioCompra != null)
                 {
                     ClassModel.producto.codigoBarra(panelCodigoB, "0", textBox_DescripcionPDT.Text, textBox_PrecioVentaPDT.Text);
                     ClassModel.producto.verificarPrecioVenta(label_PrecioVentaPDT, textBox_PrecioVentaPDT.Text,precioCompra,funcion);
@@ -2031,6 +2052,7 @@ namespace Punto_de_ventas
         {
             ClassModel.eventos.numberDecimalKeyPRess(textBox_PrecioVentaPDT,e);
         }
+
         private void ComboBox_DepartamentoPDT_SelectedIndexChanged(object sender, EventArgs e)
         {
             Departamentos dpto = (Departamentos)comboBox_DepartamentoPDT.SelectedItem;
@@ -2047,6 +2069,30 @@ namespace Punto_de_ventas
 
             comboBox_Categorias.DataSource = ClassModel.producto.GetCategorias(dpto.IdDpto);
             comboBox_Categorias.DisplayMember = "Categoria";
+        }
+
+        private void TextBox_CoprasProductos_TextChanged(object sender, EventArgs e)
+        {
+            ClassModel.producto.getProductos(dataGridView_ProdCompra, textBox_CoprasProductos.Text);
+        }
+        private void Button_PrimeroPDT_Click(object sender, EventArgs e)
+        {
+            new Paginador(dataGridView_Productos, label_PaginasPDT, paginas, 1).primero();
+        }
+
+        private void Button_AnteriorPDT_Click(object sender, EventArgs e)
+        {
+            new Paginador(dataGridView_Productos, label_PaginasPDT, paginas, 1).anterior();
+        }
+
+        private void Button_SiguientePDT_Click(object sender, EventArgs e)
+        {
+            new Paginador(dataGridView_Productos, label_PaginasPDT, paginas, 1).siguiente();
+        }
+
+        private void Button_UltimaPDT_Click(object sender, EventArgs e)
+        {
+            new Paginador(dataGridView_Productos, label_PaginasPDT, paginas, 1).ultimo();
         }
         private void guardarProducto()
         {
@@ -2075,17 +2121,34 @@ namespace Punto_de_ventas
                     switch (accion)
                     {
                         case "Insert":
-                            if (verificar)
+                            if (funcion == 1)
                             {
-                                ClassModel.producto.saveProducto(producto, cantidad, precio, departamento, categoria,accion,idCompras);
+                                if (verificar)
+                                {
+                                    ClassModel.producto.saveProducto(producto, cantidad, precio, departamento, categoria, accion, idCompras);
+                                    groupBox = groupBoxPT_CodeBarra;
+                                    printDocument1.Print();
+                                    restablecerProductos();
+                                }
                             }
-                            
-                            break;
+                            else
+                            {
+                                MessageBox.Show("Seleccione un Producto");
+                            }
+                                break;
                         case "Update":
-                            ClassModel.producto.saveProducto(producto, cantidad, precio, departamento, categoria, accion, idProducto);
+                            if (funcion == 2)
+                            {
+                                ClassModel.producto.saveProducto(producto, cantidad, precio, departamento, categoria, accion, idProducto);
+                                restablecerProductos();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Seleccione un Producto");    
+                            }
                             break;
                     }
-                    restablecerProductos();
+                    
                 }
             }
         }
@@ -2129,6 +2192,122 @@ namespace Punto_de_ventas
         private void Button_CancelarPDT_Click(object sender, EventArgs e)
         {
             restablecerProductos();
+        }
+        #endregion
+
+        /***************************************************************
+         *                                                             *   
+         *                CODIGO DE VENTAS.                            *
+         *                                                             *
+         *                                                             *
+         **************************************************************/
+        #region
+        private void Button_Ventas_Click(object sender, EventArgs e)
+        {
+            tabControl1.SelectedIndex = 0;
+            restablacerVetas();
+            button_Clientes.Enabled = true;
+            button_Ventas.Enabled = false;
+            button_Productos.Enabled = true;
+            button_Dpto.Enabled = true;
+            button_Proveedores.Enabled = true;
+            if ("Admin" != role)
+            {
+                button_Compras.Enabled = false;
+            }
+            else
+            {
+                button_Compras.Enabled = true;
+            }
+
+        }
+        private void restablacerVetas()
+        {
+            ClassModel.venta.searchVentatemp(dataGridView_Ventas, 1, pageSize,caja,idUsuario);
+            ClassModel.venta.importes(label_ImportesVentas,caja,idUsuario);
+            label_MensajeCliente.Text = string.Empty;
+            ClassModel.venta.searchCliente(dataGridView_ClienteVenta, textBox_BuscarClienteVenta.Text);
+        }
+        private void Button_BuscarProducto_Click(object sender, EventArgs e)
+        {
+            if (textBox_BuscarProductos.Text == string.Empty)
+            {
+                label_MensajeVenta.Text = "Ingrese el códgo del producto";
+                label_MensajeVenta.ForeColor = Color.Red;
+                textBox_BuscarProductos.Focus();
+            }
+            else
+            {
+              var producto = ClassModel.venta.searchBodega(textBox_BuscarProductos.Text);
+                if (0 < producto.Count)
+                {
+                    ClassModel.venta.saveVentasTempo(textBox_BuscarProductos.Text, 0,caja,idUsuario);
+                    ClassModel.venta.searchVentatemp(dataGridView_Ventas, 1, pageSize,caja,idUsuario);
+                    ClassModel.venta.importes(label_ImportesVentas,caja,idUsuario);
+                }
+                else
+                {
+                    label_MensajeVenta.Text = "Dicho producto no se encuentra registrado";
+                }
+            }
+        }
+        private void TextBox_Pagos_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            ClassModel.eventos.numberDecimalKeyPRess(textBox_Pagos,e);
+        }
+
+        private void TextBox_Pagos_TextChanged(object sender, EventArgs e)
+        {
+            label_MensajeCliente.Text = string.Empty;
+            ClassModel.venta.pagos(textBox_Pagos, label_SuCambio, label_Cambio, label_Pago);
+            ClassModel.venta.dataCliente(checkBox_Credito,textBox_Pagos,textBox_BuscarClienteVenta,dataGridView_ClienteVenta,labels);
+        }
+        private void TextBox_BuscarClienteVenta_TextChanged(object sender, EventArgs e)
+        {
+            label_MensajeCliente.Text = string.Empty;
+            ClassModel.venta.searchCliente(dataGridView_ClienteVenta,textBox_BuscarClienteVenta.Text);
+        }
+        private void CheckBox_Credito_CheckedChanged(object sender, EventArgs e)
+        {
+            ClassModel.venta.dataCliente(checkBox_Credito, textBox_Pagos, textBox_BuscarClienteVenta, dataGridView_ClienteVenta, labels);
+        }
+        private void DataGridView_ClienteVenta_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (dataGridView_ClienteVenta.Rows.Count != 0)
+            {
+                label_MensajeCliente.Text = string.Empty;
+                if (checkBox_Credito.Checked == true)
+                {
+                    if (textBox_Pagos.Text != string.Empty)
+                    {
+                        ClassModel.venta.dataCliente(checkBox_Credito, textBox_Pagos, textBox_BuscarClienteVenta, dataGridView_ClienteVenta, labels);
+                    }
+                    else
+                    {
+                        label_MensajeCliente.Text = "Ingrese el pago";
+                        textBox_Pagos.Focus();
+                    }
+                }
+                else
+                {
+                    label_MensajeCliente.Text = "Seleccione la opción de crédito";
+                }
+            }
+        }
+        private void Button_Cobrar_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void DataGridView_Ventas_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (dataGridView_Ventas.Rows.Count != 0)
+            {
+                string codigo = Convert.ToString(dataGridView_Ventas.CurrentRow.Cells[1].Value);
+                int cantidad = Convert.ToInt16(dataGridView_Ventas.CurrentRow.Cells[4].Value);
+                ClassModel.venta.deleteVenta(codigo,cantidad,caja,idUsuario);
+                ClassModel.venta.importes(label_ImportesVentas,caja,idUsuario);
+                ClassModel.venta.searchVentatemp(dataGridView_Ventas, 1, pageSize,caja,idUsuario);
+            }
         }
         #endregion
         private void Form1_KeyDown(object sender, KeyEventArgs e)
